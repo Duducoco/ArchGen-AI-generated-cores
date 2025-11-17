@@ -37,17 +37,17 @@ To keep the project organized, we suggest the following structure (you can modif
 
 ```
 .
-├── /single_cycle_rv32i           # ✅ Single-Cycle Core
+├── /archgen_single_rv32i           # ✅ Single-Cycle Core
 │   ├── /rtl                      # Verilog / VHDL code
 │   ├── /sim                      # Simulation scripts and Testbenches
 │   └── /doc                      # AI generation prompts or related notes
 │
-├── /pipeline_stall_rv32i         # ✅ Stall-based Pipeline
+├── /archgen_pipeline_rv32i         # ✅ Stall-based Pipeline
 │   ├── /rtl
 │   ├── /sim
 │   └── /doc
 │
-├── /pipeline_bypass_rv32i        # ⏳ Bypass-based Pipeline
+├── /archgen_pipeline_bypass_rv32i        # ⏳ Bypass-based Pipeline
 │   ├── ...
 │
 └── README.md                     # This file
