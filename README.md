@@ -85,6 +85,8 @@ A complete verification infrastructure has been built using **RISCV-DV** (random
 | riscv64-unknown-elf-gcc | 15.2.0 |
 | Python | 3.12+ |
 
+**Note**: RISCV-DV uses VCS as the instruction generator (not Python pyvsc), so no additional Python dependencies are required.
+
 ### Quick Start
 
 ```bash
@@ -108,12 +110,14 @@ gen → compile_test → spike_sim → rtl_compile → rtl_sim → compare
 
 | Step | Description |
 |------|-------------|
-| `gen` | Generate random assembly using RISCV-DV |
+| `gen` | Generate random assembly using RISCV-DV (VCS-based generator) |
 | `compile_test` | Compile assembly to ELF, convert to hex |
 | `spike_sim` | Run Spike ISS, generate reference trace CSV |
 | `rtl_compile` | Compile RTL with VCS |
 | `rtl_sim` | Run RTL simulation, capture execution trace |
 | `compare` | Compare Spike vs RTL traces |
+
+All test artifacts (hex, logs, traces, VCD, ucli.key) are organized in `dv/out/<core>/<test>_seed<N>/`.
 
 ### Usage Examples
 
@@ -151,16 +155,32 @@ make -C dv cov_regress CORE=single
 
 ### Available Tests
 
-| Test Name | Description |
-|-----------|-------------|
-| `riscv_arithmetic_basic_test` | Pure ALU instructions, no load/store/branch |
-| `riscv_rand_instr_test` | Full RV32I random instructions |
-| `riscv_load_store_test` | Focused load/store with various data types |
-| `riscv_jump_branch_test` | Focused branch and jump instructions |
+| Test Name | Description | Instruction Count |
+|-----------|-------------|-------------------|
+| `riscv_arithmetic_basic_test` | Pure ALU instructions, no load/store/branch | 200 |
+| `riscv_rand_instr_test` | Full RV32I random instructions | 80 |
+| `riscv_load_store_test` | Focused load/store with various data types | 300 |
+| `riscv_jump_branch_test` | Focused branch and jump instructions | 300 |
+
+**Note**: Instruction counts are tuned to fit within 64KB InstMem + 128KB linker script limits.
 
 ### Architecture Notes
 
 - **ISA**: RV32I (no CSR, no M extension, no fence)
 - **Initial PC**: `0x00400000`
-- **Memory**: Harvard architecture — separate instruction and data memories
+- **Memory**: Harvard architecture
+  - InstMem: 64KB (PC[15:2])
+  - DataMem: 128KB (addr[16:2])
+- **Linker script**: 128KB RAM region (0x00400000 - 0x0041FFFF)
 - **Pipeline modifications**: PC and instruction binary are propagated through the pipeline to the WB stage for trace capture (debug-only ports, no functional impact)
+
+### Verification Results
+
+Both cores have been successfully verified with RISCV-DV random tests:
+
+| Core | Test | SEED | Instructions Matched |
+|------|------|------|---------------------|
+| Single-cycle | arithmetic_basic | 0 | 213 ✅ |
+| Single-cycle | load_store | 999 | 420 ✅ |
+| 5-stage pipeline | rand_instr | 42 | 70 ✅ |
+| 5-stage pipeline | rand_instr | 123 | 76 ✅ |

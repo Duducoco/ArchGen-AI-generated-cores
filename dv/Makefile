@@ -48,7 +48,7 @@ MAX_CYCLES ?= 500000
 GCC_MARCH  := rv32i_zicsr
 GCC_MABI   := ilp32
 GCC_FLAGS  := -march=$(GCC_MARCH) -mabi=$(GCC_MABI) -nostdlib -nostartfiles \
-              -T $(COMMON)/link.ld -Wl,--no-relax
+              -T $(COMMON)/link.ld -Wl,--no-relax -I$(TARGET_DIR)
 
 # ---- Core-specific paths (deferred evaluation for target-specific CORE) ----
 CORE_DIR = $(DV_ROOT)/$(CORE)
@@ -159,12 +159,11 @@ gen:
 		-ct $(TARGET_DIR) \
 		--isa $(ISA) \
 		--priv $(PRIV) \
-		--seed $(SEED) \
 		--iterations 1 \
 		-o $(WORK_DIR) \
 		-s gen \
 		--simulator_yaml $(RISCV_DV)/yaml/simulator.yaml \
-		-si pyflow \
+		-si vcs \
 		--start_seed $(SEED) 2>&1 | tee $(WORK_DIR)/gen.log
 	@# Find generated .S file and copy to work dir
 	@find $(WORK_DIR) -name "*.S" -not -name "smoke_test.S" | head -1 | \
@@ -216,10 +215,11 @@ rtl_compile:
 # ============================================================================
 rtl_sim:
 	@echo "==== [SIM] Running RTL simulation ===="
-	cd $(PROJ_ROOT) && $(SIM_DIR)/simv \
+	cd $(WORK_DIR) && $(SIM_DIR)/simv \
 		+text_file=$(TEXT_HEX) \
 		+data_file=$(DATA_HEX) \
 		+trace_log=$(RTL_LOG) \
+		+vcd_file=$(WORK_DIR)/dump.vcd \
 		+max_cycles=$(MAX_CYCLES) \
 		$(if $(VCS_COV_SIM),$(VCS_COV_SIM) -cm_dir $(COV_DIR)/cov.vdb -cm_name $(TEST)_seed$(SEED)) \
 		-l $(WORK_DIR)/sim.log 2>&1
@@ -275,10 +275,11 @@ _smoke_run:
 		-o $(SMOKE_DIR)/sim/simv \
 		-l $(SMOKE_DIR)/sim/compile.log 2>&1
 	@echo "==== [SMOKE] Running simulation ===="
-	cd $(PROJ_ROOT) && $(SMOKE_DIR)/sim/simv \
+	cd $(SMOKE_DIR) && $(SMOKE_DIR)/sim/simv \
 		+text_file=$(SMOKE_TEXT) \
 		+data_file=$(SMOKE_DATA) \
 		+trace_log=$(SMOKE_LOG) \
+		+vcd_file=$(SMOKE_DIR)/dump.vcd \
 		+max_cycles=10000 \
 		$(if $(VCS_COV_SIM),$(VCS_COV_SIM) -cm_dir $(SMOKE_COV_DIR)/cov.vdb -cm_name smoke) \
 		-l $(SMOKE_DIR)/sim.log 2>&1

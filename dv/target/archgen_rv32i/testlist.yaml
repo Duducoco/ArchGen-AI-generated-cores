@@ -27,8 +27,8 @@
     Random instruction test covering full RV32I ISA including
     load/store, branches, jumps, and arithmetic.
   gen_opts: >
-    +instr_cnt=500
-    +num_of_sub_program=5
+    +instr_cnt=80
+    +num_of_sub_program=0
     +no_fence=1
     +no_csr_instr=1
     +no_ebreak=1

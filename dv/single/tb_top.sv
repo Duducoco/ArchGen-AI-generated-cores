@@ -48,6 +48,7 @@ module tb_top;
     string text_file;
     string data_file;
     string trace_log;
+    string vcd_file;
     int    max_cycles;
 
     initial begin
@@ -162,7 +163,11 @@ module tb_top;
             // $fsdbDumpfile(fsdb_file);
             // $fsdbDumpvars(0, tb_top);
         end
-        $dumpfile("dump.vcd");
+        if ($value$plusargs("vcd_file=%s", vcd_file)) begin
+            $dumpfile(vcd_file);
+        end else begin
+            $dumpfile("dump.vcd");
+        end
         $dumpvars(0, tb_top);
     end
 

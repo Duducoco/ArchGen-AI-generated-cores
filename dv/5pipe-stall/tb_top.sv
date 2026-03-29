@@ -204,8 +204,13 @@ module tb_top;
     //////////////////////////////////////////
     // VCS waveform dump
     //////////////////////////////////////////
+    string vcd_file;
     initial begin
-        $dumpfile("dump.vcd");
+        if ($value$plusargs("vcd_file=%s", vcd_file)) begin
+            $dumpfile(vcd_file);
+        end else begin
+            $dumpfile("dump.vcd");
+        end
         $dumpvars(0, tb_top);
     end
 

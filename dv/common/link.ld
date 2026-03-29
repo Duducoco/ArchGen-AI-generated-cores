@@ -8,8 +8,8 @@ ENTRY(_start)
 
 MEMORY
 {
-    /* 64KB region starting at 0x00400000 */
-    RAM (rwx) : ORIGIN = 0x00400000, LENGTH = 0x10000
+    /* 128KB region starting at 0x00400000 (to fit text + data + tohost) */
+    RAM (rwx) : ORIGIN = 0x00400000, LENGTH = 0x20000
 }
 
 SECTIONS
