@@ -1,0 +1,75 @@
+# RISCV-DV test list for ArchGen RV32I cores
+# Target: archgen_rv32i (no CSR, no M extension, no fence)
+
+- test: riscv_arithmetic_basic_test
+  description: >
+    Basic arithmetic instructions test (ADD, SUB, AND, OR, XOR, SLT, SLTU,
+    SLL, SRL, SRA, ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SLLI, SRLI, SRAI,
+    LUI, AUIPC). No load/store/branch to isolate ALU correctness.
+  gen_opts: >
+    +instr_cnt=200
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_data_page=1
+    +no_branch_jump=1
+    +no_load_store=1
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_rand_instr_test
+  description: >
+    Random instruction test covering full RV32I ISA including
+    load/store, branches, jumps, and arithmetic.
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=5
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 5
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_load_store_test
+  description: >
+    Focused load/store test with various addressing modes and data types
+    (LB, LH, LW, LBU, LHU, SB, SH, SW).
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=2
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+    +directed_instr_0=riscv_load_store_rand_instr_stream,20
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: riscv_jump_branch_test
+  description: >
+    Focused branch and jump test (BEQ, BNE, BLT, BGE, BLTU, BGEU,
+    JAL, JALR).
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=5
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test

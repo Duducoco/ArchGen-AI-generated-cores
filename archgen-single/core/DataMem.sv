@@ -15,7 +15,8 @@ module DataMem (
 
     assign q = mem[address];
 
-    always_ff @(posedge clock)
+    // Use 'always' instead of 'always_ff' to allow initial $readmemh coexistence
+    always @(posedge clock)
         if (wren) begin
             if (byteena[0]) mem[address][0+:8] <= data[0+:8];
             if (byteena[1]) mem[address][8+:8] <= data[8+:8];

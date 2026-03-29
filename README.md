@@ -37,20 +37,25 @@ To keep the project organized, we suggest the following structure (you can modif
 
 ```
 .
-├── /archgen_single_rv32i           # ✅ Single-Cycle Core
-│   ├── /rtl                      # Verilog / VHDL code
-│   ├── /sim                      # Simulation scripts and Testbenches
-│   └── /doc                      # AI generation prompts or related notes
-│
-├── /archgen_pipeline_rv32i         # ✅ Stall-based Pipeline
-│   ├── /rtl
-│   ├── /sim
-│   └── /doc
-│
-├── /archgen_pipeline_bypass_rv32i        # ⏳ Bypass-based Pipeline
-│   ├── ...
-│
-└── README.md                     # This file
+├── archgen-single/core/              # ✅ Single-Cycle RV32I Core (18 SV files)
+├── archgen-5pipe-stall/core/         # ✅ 5-Stage Stall-based Pipeline (29 SV files)
+├── dv/                               # ✅ Verification Infrastructure
+│   ├── riscv-dv/                     # RISCV-DV submodule (chipsalliance/riscv-dv)
+│   ├── common/                       # Shared config, linker script, scripts
+│   │   ├── config.sv                 # Memory config with plusargs functions
+│   │   ├── constants.sv              # ISA constants
+│   │   ├── link.ld                   # Linker script (PC=0x00400000, tohost/fromhost)
+│   │   ├── elf_to_hex.py            # ELF → $readmemh hex converter
+│   │   └── rtl_trace_to_csv.py      # RTL trace → RISCV-DV CSV converter
+│   ├── single/                       # Single-cycle core testbench + file list
+│   ├── 5pipe-stall/                  # Pipeline core testbench + file list
+│   ├── target/archgen_rv32i/         # RISCV-DV target configuration
+│   │   └── testlist.yaml
+│   ├── tests/                        # Hand-written tests
+│   │   └── smoke_test.S
+│   ├── Makefile                      # Top-level verification Makefile
+│   └── out/                          # Build artifacts (gitignored)
+└── README.md
 ```
 
 ## 🤝 How to Contribute
@@ -64,3 +69,98 @@ We strongly welcome contributions from the community\! Whether you are a hardwar
 ## 📜 License
 
 All code in this project is licensed under the [MIT License](https://www.google.com/search?q=LICENSE). Please see the `LICENSE` file for details.
+
+-----
+
+## 🔬 Verification Environment
+
+A complete verification infrastructure has been built using **RISCV-DV** (random instruction generator) + **VCS** (RTL simulation) + **Spike** (ISS reference model).
+
+### Prerequisites
+
+| Tool | Tested Version |
+|------|----------------|
+| Synopsys VCS | T-2022.06 |
+| Spike ISS | 1.1.1-dev |
+| riscv64-unknown-elf-gcc | 15.2.0 |
+| Python | 3.12+ |
+
+### Quick Start
+
+```bash
+# Initialize RISCV-DV submodule
+git submodule update --init --recursive
+
+# Run smoke test on single-cycle core
+make -C dv smoke_single
+
+# Run smoke test on 5-stage pipeline core
+make -C dv smoke_5pipe
+```
+
+### Verification Flow
+
+The Makefile implements a 6-step verification pipeline:
+
+```
+gen → compile_test → spike_sim → rtl_compile → rtl_sim → compare
+```
+
+| Step | Description |
+|------|-------------|
+| `gen` | Generate random assembly using RISCV-DV |
+| `compile_test` | Compile assembly to ELF, convert to hex |
+| `spike_sim` | Run Spike ISS, generate reference trace CSV |
+| `rtl_compile` | Compile RTL with VCS |
+| `rtl_sim` | Run RTL simulation, capture execution trace |
+| `compare` | Compare Spike vs RTL traces |
+
+### Usage Examples
+
+```bash
+# Full RISCV-DV flow on single-cycle core
+make -C dv run_single TEST=riscv_arithmetic_basic_test SEED=0
+
+# Full RISCV-DV flow on pipeline core
+make -C dv run_5pipe TEST=riscv_rand_instr_test SEED=42
+
+# Run regression (all tests, multiple seeds)
+make -C dv regress CORE=single
+make -C dv regress CORE=5pipe-stall
+```
+
+### Code Coverage
+
+VCS code coverage (line/cond/fsm/tgl/branch) is supported via `COV=1`:
+
+```bash
+# Smoke test with coverage
+make -C dv smoke_single COV=1
+make -C dv smoke_cov_report CORE=single
+# Report: dv/out/single/smoke/coverage/report/dashboard.html
+
+# Single RISCV-DV test with coverage
+make -C dv run_single TEST=riscv_arithmetic_basic_test SEED=0 COV=1
+make -C dv cov_report CORE=single TEST=riscv_arithmetic_basic_test SEED=0
+# Report: dv/out/single/riscv_arithmetic_basic_test_seed0/coverage/report/
+
+# Regression with coverage merge
+make -C dv cov_regress CORE=single
+# Merged report: dv/out/single/regress_coverage/report/dashboard.html
+```
+
+### Available Tests
+
+| Test Name | Description |
+|-----------|-------------|
+| `riscv_arithmetic_basic_test` | Pure ALU instructions, no load/store/branch |
+| `riscv_rand_instr_test` | Full RV32I random instructions |
+| `riscv_load_store_test` | Focused load/store with various data types |
+| `riscv_jump_branch_test` | Focused branch and jump instructions |
+
+### Architecture Notes
+
+- **ISA**: RV32I (no CSR, no M extension, no fence)
+- **Initial PC**: `0x00400000`
+- **Memory**: Harvard architecture — separate instruction and data memories
+- **Pipeline modifications**: PC and instruction binary are propagated through the pipeline to the WB stage for trace capture (debug-only ports, no functional impact)

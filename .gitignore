@@ -1,0 +1,11 @@
+dv/out/
+dump.vcd
+ucli.key
+*.log
+csrc/
+simv
+simv.daidir/
+CLAUDE.md
+*.vdb/
+urgReport/
+coverage/

@@ -44,6 +44,7 @@ module toplevel (
     logic [31:0] pc_add_4_EX;
 //fan    logic [31:0] pc_add_4_EXE;
     logic [31:0] pc_EX;
+    logic [31:0] inst_EX;           // instruction for trace (debug)
     logic [31:0] reg_data_rs1_EX;
     logic [31:0] reg_data_rs2_EX;
     logic [31:0] imm_data_EX;
@@ -74,6 +75,8 @@ module toplevel (
     logic [31:0] reg_data_rs2_Mem;
     logic [31:0] imm_data_Mem;
     logic [31:0] pc_add_4_Mem;
+    logic [31:0] pc_Mem;            // PC for trace (debug)
+    logic [31:0] inst_Mem;          // instruction for trace (debug)
     logic [2:0] funct3_Mem;
     logic [4:0] rd_Mem;
     logic MemRead_Mem;
@@ -90,6 +93,8 @@ module toplevel (
     
     // WB阶段信号
     logic [31:0] wb_data_WB;          // 修改：合并为单一写回数据
+    logic [31:0] pc_WB;               // PC for trace (debug)
+    logic [31:0] inst_WB;             // instruction for trace (debug)
     logic [4:0] rd_WB;
     logic RegWrite_WB;
     logic [31:0] reg_write_data_WB;   // 写回寄存器文件的数据
@@ -222,6 +227,7 @@ module toplevel (
 	.stall(stall_id_ex),
         .pc_add_4_in(pc_add_4_ID),
         .pc_in(pc_ID),
+        .inst_in(instruction_ID),  // instruction for trace (debug)
         .reg_data_rs1_in(reg_data_rs1_ID),
         .reg_data_rs2_in(reg_data_rs2_ID),
         .imm_data_in(imm_data_ID),
@@ -240,6 +246,7 @@ module toplevel (
         .is_jalr_in(is_jalr_ID),  // 添加JALR标识
         .pc_add_4_EX(pc_add_4_EX),
         .pc_EX(pc_EX),
+        .inst_EX(inst_EX),  // instruction for trace (debug)
         .reg_data_rs1_EX(reg_data_rs1_EX),
         .reg_data_rs2_EX(reg_data_rs2_EX),
         .imm_data_EX(imm_data_EX),
@@ -321,6 +328,8 @@ module toplevel (
         .reg_data_rs2_in(reg_data_rs2_EX),
         .imm_data_in(imm_data_EX),
         .pc_add_4_in(pc_add_4_EX),
+        .pc_in(pc_EX),             // PC for trace (debug)
+        .inst_in(inst_EX),         // instruction for trace (debug)
         .funct3_in(funct3_EX),
         .rd_in(rd_EX),
         .MemRead_in(MemRead_EX),
@@ -331,6 +340,8 @@ module toplevel (
         .reg_data_rs2_Mem(reg_data_rs2_Mem),
         .imm_data_Mem(imm_data_Mem),
         .pc_add_4_Mem(pc_add_4_Mem),
+        .pc_Mem(pc_Mem),           // PC for trace (debug)
+        .inst_Mem(inst_Mem),       // instruction for trace (debug)
         .funct3_Mem(funct3_Mem),
         .rd_Mem(rd_Mem),
         .MemRead_Mem(MemRead_Mem),
@@ -371,9 +382,13 @@ module toplevel (
         .clk(clock),
         .reset(reset),
         .wb_data_in(reg_write_data_WB),  // 修改：使用写回数据
+        .pc_in(pc_Mem),                  // PC for trace (debug)
+        .inst_in(inst_Mem),              // instruction for trace (debug)
         .rd_in(rd_Mem),
         .RegWrite_in(RegWrite_Mem),
         .wb_data_WB(wb_data_WB),          // 修改：输出写回数据
+        .pc_WB(pc_WB),                    // PC for trace (debug)
+        .inst_WB(inst_WB),                // instruction for trace (debug)
         .rd_WB(rd_WB),
         .RegWrite_WB(RegWrite_WB)
     );

@@ -1,28 +1,30 @@
 module ID_EX_Reg (
-    input clk,                
-    input reset,              
-    input flush, 
-    input stall,             
-    input [31:0] pc_add_4_in, 
-    input [31:0] pc_in,       
+    input clk,
+    input reset,
+    input flush,
+    input stall,
+    input [31:0] pc_add_4_in,
+    input [31:0] pc_in,
+    input [31:0] inst_in,     // instruction for trace (debug)
     input [31:0] reg_data_rs1_in,
     input [31:0] reg_data_rs2_in,
-    input [31:0] imm_data_in, 
-    input [2:0] funct3_in,    
-    input [4:0] rd_in,        
-    input [4:0] rs1_in,       
-    input [4:0] rs2_in,       
+    input [31:0] imm_data_in,
+    input [2:0] funct3_in,
+    input [4:0] rd_in,
+    input [4:0] rs1_in,
+    input [4:0] rs2_in,
     input [4:0] ALU_Function_in,
-    input ALUSrc1_in,         
-    input ALUSrc2_in,         
-    input MemRead_in,         
-    input MemWrite_in,        
-    input RegWrite_in,        
+    input ALUSrc1_in,
+    input ALUSrc2_in,
+    input MemRead_in,
+    input MemWrite_in,
+    input RegWrite_in,
     input [2:0] WriteBack_Sel_in,
     input [2:0] BranchType_in,
-    input is_jalr_in,         
+    input is_jalr_in,
     output reg [31:0] pc_add_4_EX,
     output reg [31:0] pc_EX,
+    output reg [31:0] inst_EX, // instruction for trace (debug)
     output reg [31:0] reg_data_rs1_EX,
     output reg [31:0] reg_data_rs2_EX,
     output reg [31:0] imm_data_EX,
@@ -47,10 +49,12 @@ module ID_EX_Reg (
             MemWrite_EX <= 1'b0;
             RegWrite_EX <= 1'b0;
             BranchType_EX <= 3'b0;
+            inst_EX <= 32'b0;
         end
         else if (flush) begin
             pc_add_4_EX <= 32'b0;
             pc_EX <= 32'b0;
+            inst_EX <= 32'b0;
             reg_data_rs1_EX <= 32'b0;
             reg_data_rs2_EX <= 32'b0;
             imm_data_EX <= 32'b0;
@@ -71,6 +75,7 @@ module ID_EX_Reg (
         else begin
             pc_add_4_EX <= pc_add_4_in;
             pc_EX <= pc_in;
+            inst_EX <= inst_in;
             reg_data_rs1_EX <= reg_data_rs1_in;
             reg_data_rs2_EX <= reg_data_rs2_in;
             imm_data_EX <= imm_data_in;
