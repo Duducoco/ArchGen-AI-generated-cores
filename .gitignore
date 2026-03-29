@@ -9,3 +9,4 @@ CLAUDE.md
 *.vdb/
 urgReport/
 coverage/
+.fsm.sch.verilog.xml
