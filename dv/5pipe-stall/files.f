@@ -21,9 +21,10 @@ archgen-5pipe-stall/core/Mux_ALUSrc1.sv
 archgen-5pipe-stall/core/Mux_ALUSrc2.sv
 archgen-5pipe-stall/core/Mux_RegWriteData.sv
 archgen-5pipe-stall/core/Mux_NextPC.sv
-archgen-5pipe-stall/core/Mux_ForwardA.sv
-archgen-5pipe-stall/core/Mux_ForwardB.sv
-archgen-5pipe-stall/core/Mux_MemStage_WriteBack.sv
+// Dead code (not instantiated in toplevel, reserved for future bypass pipeline):
+// archgen-5pipe-stall/core/Mux_ForwardA.sv
+// archgen-5pipe-stall/core/Mux_ForwardB.sv
+// archgen-5pipe-stall/core/Mux_MemStage_WriteBack.sv
 archgen-5pipe-stall/core/PC_Plus4_Adder.sv
 archgen-5pipe-stall/core/PC_PlusImm_Adder.sv
 archgen-5pipe-stall/core/NextPC_Decision_Unit.sv
@@ -36,9 +37,10 @@ archgen-5pipe-stall/core/ID_EX_Reg.sv
 archgen-5pipe-stall/core/EX_Mem_Reg.sv
 archgen-5pipe-stall/core/Mem_WB_Reg.sv
 
-// Hazard and forwarding
+// Hazard control (stall-based, no forwarding)
 archgen-5pipe-stall/core/Hazard_Control_Unit.sv
-archgen-5pipe-stall/core/Forwarding_Unit.sv
+// Dead code (not instantiated in toplevel, reserved for future bypass pipeline):
+// archgen-5pipe-stall/core/Forwarding_Unit.sv
 
 // Toplevel
 archgen-5pipe-stall/core/toplevel.sv
