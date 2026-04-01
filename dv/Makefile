@@ -249,9 +249,15 @@ compare:
 # ============================================================================
 run_single: CORE=single
 run_single: gen compile_test spike_sim rtl_compile rtl_sim compare
+ifeq ($(COV),1)
+	@$(MAKE) cov_report CORE=single TEST=$(TEST) SEED=$(SEED)
+endif
 
 run_5pipe: CORE=5pipe-stall
 run_5pipe: gen compile_test spike_sim rtl_compile rtl_sim compare
+ifeq ($(COV),1)
+	@$(MAKE) cov_report CORE=5pipe-stall TEST=$(TEST) SEED=$(SEED)
+endif
 
 # ============================================================================
 # Smoke test: compile hand-written test → VCS → run → check trace
