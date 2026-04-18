@@ -8,7 +8,14 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTLIST="$SCRIPT_DIR/target/archgen_rv32i/testlist.yaml"
-CORE="5pipe-stall"
+# CORE="5pipe-stall"
+CORE="single"
+# Map CORE → make target
+case "$CORE" in
+    single)     MAKE_TARGET="run_single" ;;
+    5pipe-stall) MAKE_TARGET="run_5pipe" ;;
+    *) echo "ERROR: unknown CORE '$CORE'"; exit 1 ;;
+esac
 TEST_NUM="${1:-50}"
 
 MAX_JOBS=$(( $(nproc) / 2 ))
@@ -23,7 +30,7 @@ mapfile -t TESTS < <(grep '^- test:' "$TESTLIST" | awk '{print $3}' | tr -d '\r'
 total=$(( ${#TESTS[@]} * TEST_NUM ))
 
 echo "============================================================"
-echo " ArchGen 5-stage pipeline random verification"
+echo " ArchGen $CORE random verification"
 echo " Tests: ${#TESTS[@]}, Runs/test: $TEST_NUM, Total: $total"
 echo " Core: $CORE,  Parallel jobs: $MAX_JOBS / $(nproc) CPUs"
 echo "============================================================"
@@ -31,7 +38,7 @@ echo "============================================================"
 run_one() {
     local test="$1" seed="$2"
 
-    make -C "$SCRIPT_DIR" run_5pipe TEST="$test" SEED="$seed" COV=1 \
+    make -C "$SCRIPT_DIR" "$MAKE_TARGET" TEST="$test" SEED="$seed" COV=1 \
         > "$RESULT_DIR/${test}__${seed}.log" 2>&1
     local rc=$?
 
