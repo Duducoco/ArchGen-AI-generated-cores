@@ -73,3 +73,245 @@
   iterations: 3
   gen_test: riscv_instr_base_test
   rtl_test: core_base_test
+
+# ============================================================================
+# Dataset configurations for branch coverage prediction
+# Designed to produce maximum branch coverage variance (~35% to ~90%)
+# Grouped by coverage tier to ensure wide spread in the dataset
+# ============================================================================
+
+# ---- Tier 1: Arithmetic only — no branches, no load/store (~35-50%) ----
+# Only ALU/reg-imm opcodes exercised. Misses: BRANCH/JAL/JALR/LOAD/STORE
+# opcodes in Controller, all NextPC branches, all DataMem_interface branches,
+# and ALU compare ops (SEQ/SNE/SGE/SGEU).
+
+- test: ds_arith_short
+  description: >
+    Short pure-arithmetic test. No branch/jump, no load/store.
+    Very low instruction count → partial ALU coverage only.
+    Expected branch coverage: ~35-45%.
+  gen_opts: >
+    +instr_cnt=40
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_data_page=1
+    +no_branch_jump=1
+    +no_load_store=1
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: ds_arith_long
+  description: >
+    Long pure-arithmetic test. No branch/jump, no load/store.
+    High instruction count → full ALU coverage but still misses
+    branch/jump and memory tiers. Expected branch coverage: ~40-50%.
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_data_page=1
+    +no_branch_jump=1
+    +no_load_store=1
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+# ---- Tier 2: Load/store only, no branches (~55-68%) ----
+# Covers LOAD/STORE opcodes and all DataMem_interface branches.
+# Misses: BRANCH/JAL/JALR opcodes, NextPC branches, ALU compare ops.
+
+- test: ds_ls_rand
+  description: >
+    Load/store focused, no branches. Uses directed random-LS streams
+    to maximise byte/half/word access variety.
+    Expected branch coverage: ~55-65%.
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=2
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_branch_jump=1
+    +directed_instr_0=riscv_load_store_rand_instr_stream,25
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: ds_ls_stress
+  description: >
+    Stress load/store, no branches. High directed-stream count drives
+    every byte-offset and width combination into DataMem_interface.
+    Expected branch coverage: ~60-68%.
+  gen_opts: >
+    +instr_cnt=400
+    +num_of_sub_program=3
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_branch_jump=1
+    +directed_instr_0=riscv_load_store_stress_instr_stream,30
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+# ---- Tier 3: Branch/jump only, no load/store (~48-62%) ----
+# Covers BRANCH/JAL/JALR opcodes and NextPC decision branches.
+# Many sub-programs force JAL/JALR; branch conditions drive taken/not-taken.
+# Misses: LOAD/STORE opcodes, all DataMem_interface branches.
+
+- test: ds_branch_medium
+  description: >
+    Branch/jump focused, no load/store. Moderate sub-program count
+    exercises JAL and conditional branches (taken + not-taken).
+    Expected branch coverage: ~48-58%.
+  gen_opts: >
+    +instr_cnt=300
+    +num_of_sub_program=8
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_data_page=1
+    +no_load_store=1
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: ds_branch_dense
+  description: >
+    Extreme branch/jump density. Many sub-programs + large program
+    exercises all 6 branch funct3 variants and both JAL/JALR paths.
+    Expected branch coverage: ~55-65%.
+  gen_opts: >
+    +instr_cnt=500
+    +num_of_sub_program=15
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +no_data_page=1
+    +no_load_store=1
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+# ---- Tier 4: Full random — varying sizes (~60-80%) ----
+# All instruction types enabled. Coverage scales with program length.
+
+- test: ds_rand_tiny
+  description: >
+    Full-random, tiny program. All instruction categories enabled but
+    very few instructions → poor branch coverage by chance.
+    Expected branch coverage: ~55-68%.
+  gen_opts: >
+    +instr_cnt=25
+    +num_of_sub_program=0
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: ds_rand_medium
+  description: >
+    Full-random, medium program with sub-programs.
+    Expected branch coverage: ~65-78%.
+  gen_opts: >
+    +instr_cnt=200
+    +num_of_sub_program=4
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: ds_rand_large
+  description: >
+    Full-random, large program. Many sub-programs increase JAL/JALR
+    and call-return sequences. Expected branch coverage: ~72-82%.
+  gen_opts: >
+    +instr_cnt=600
+    +num_of_sub_program=8
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+# ---- Tier 5: Full random + directed streams (~78-92%) ----
+# Combines random instructions with directed load/store streams to
+# systematically cover DataMem_interface byte/half/word variants
+# AND branch/jump paths simultaneously.
+
+- test: ds_full_ls_directed
+  description: >
+    Large random program augmented with heavy directed load/store
+    streams covering all access widths and byte offsets.
+    Expected branch coverage: ~78-88%.
+  gen_opts: >
+    +instr_cnt=600
+    +num_of_sub_program=8
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +directed_instr_0=riscv_load_store_rand_instr_stream,30
+    +directed_instr_1=riscv_load_store_stress_instr_stream,20
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
+
+- test: ds_full_max
+  description: >
+    Maximum coverage configuration. Very large program, many sub-programs
+    for deep JAL/JALR call chains, multiple directed streams for
+    exhaustive load/store coverage. Expected branch coverage: ~85-95%.
+  gen_opts: >
+    +instr_cnt=1000
+    +num_of_sub_program=12
+    +no_fence=1
+    +no_csr_instr=1
+    +no_ebreak=1
+    +boot_mode=m
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_stress_instr_stream,25
+    +enable_illegal_csr_instruction=0
+    +enable_access_invalid_csr_level=0
+  iterations: 3
+  gen_test: riscv_instr_base_test
+  rtl_test: core_base_test
