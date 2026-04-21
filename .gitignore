@@ -11,3 +11,4 @@ urgReport/
 coverage/
 .fsm.sch.verilog.xml
 .claude
+__pycache__/
