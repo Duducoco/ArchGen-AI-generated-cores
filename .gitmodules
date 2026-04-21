@@ -1,3 +1,6 @@
 [submodule "dv/riscv-dv"]
 	path = dv/riscv-dv
 	url = https://github.com/chipsalliance/riscv-dv.git
+[submodule "dv/coverage-report-extractor"]
+	path = dv/coverage-report-extractor
+	url = git@github.com:Duducoco/coverage-report-extractor.git
