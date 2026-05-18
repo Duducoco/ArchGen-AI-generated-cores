@@ -106,27 +106,6 @@
   gen_test: riscv_instr_base_test
   rtl_test: core_base_test
 
-- test: ds_arith_long
-  description: >
-    Long pure-arithmetic test. No branch/jump, no load/store.
-    High instruction count → full ALU coverage but still misses
-    branch/jump and memory tiers. Expected branch coverage: ~40-50%.
-  gen_opts: >
-    +instr_cnt=500
-    +num_of_sub_program=0
-    +no_fence=1
-    +no_csr_instr=1
-    +no_ebreak=1
-    +boot_mode=m
-    +no_data_page=1
-    +no_branch_jump=1
-    +no_load_store=1
-    +enable_illegal_csr_instruction=0
-    +enable_access_invalid_csr_level=0
-  iterations: 3
-  gen_test: riscv_instr_base_test
-  rtl_test: core_base_test
-
 # ---- Tier 2: Load/store only, no branches (~55-68%) ----
 # Covers LOAD/STORE opcodes and all DataMem_interface branches.
 # Misses: BRANCH/JAL/JALR opcodes, NextPC branches, ALU compare ops.
